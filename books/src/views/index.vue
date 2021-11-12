@@ -29,7 +29,7 @@
       <el-row>
         <el-col :xs="19" :sm="19" :md="19" :lg="19" :xl="19" :push="2">
           <div style="overflow: auto">
-            <dl v-for="item in books" :key="item.id">
+            <dl v-for="item in pagebooks" :key="item.id">
               <dt>
                 <el-image :src="item.url" fit="fill"></el-image>
               </dt>
@@ -45,6 +45,7 @@
               <dd>
                 索书号：<span>{{ item.ssh }}</span>
               </dd>
+              
               <dd>
                 作者：<span style="color: #009ad6">{{ item.writer }}</span>
               </dd>
@@ -53,14 +54,14 @@
               </dd>
               <dd>
                 出版日期：<span>{{ item.cbdate }}</span>
-              </dd>
-              <dd>
-                页数：<span style="color:#99CC33">{{ item.numpage }}</span>
-              </dd>
+              </dd>             
               <dd>
                 定价：￥<span style="color: #6950a1">{{
                   item.price.toFixed(2)
                 }}</span>
+              </dd>
+               <dd>
+                架位号：<span style="color:#99CC33">{{ item.numpage }}</span>
               </dd>
             </dl>
           </div>
@@ -112,6 +113,7 @@ export default {
       current: 1,
       loading: false,
       books: [],
+      pagebooks:[],
       drawer:false,
      
       querytype:[
@@ -216,12 +218,10 @@ export default {
 
   methods: {
   click_name(name){
-
-    // this.theme="dark";
  this.selectType=name;
-
   },
-    handleClose(done){
+    handleClose(done){     
+      // console.log(this.selectType);  
       done();
     },
     Openmenu(){
@@ -229,8 +229,7 @@ export default {
     },
     showdata() {
       this.books = [
-        {
-          id: 0,
+        {        
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -238,11 +237,10 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+          numpage: "A123",
           price: 68.0,
         },
-        {
-          id: 1,
+        {        
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -250,11 +248,10 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+          numpage: "A123",
           price: 68.0,
         },
-        {
-          id: 2,
+        {    
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -262,11 +259,10 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+          numpage: "A123",
           price: 68.0,
         },
-        {
-          id: 3,
+        {        
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -274,11 +270,10 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+          numpage: "A123",
           price: 68.0,
         },
-        {
-          id: 4,
+        {        
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -286,11 +281,10 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+          numpage: "A123",
           price: 68.0,
         },
-        {
-          id: 5,
+        {     
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -298,16 +292,26 @@ export default {
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-          numpage: 632,
+           numpage: "A123",
           price: 68.0,
         },
       ];
-      this.total = this.books.length;
+      this.total = this.books.length;    
+      this.pagebooks=this.books;   
+     for (var i = 0; i < this.books.length; i++) {               
+      this.pagebooks[i]["key"] =i+1; 
+     }
+      this.pagebooks=this.books.slice((this.current-1)*this.pagesize,this.pagesize*this.current);
+      
+      
+      
     },
+  
     //点击页数
     page_click(current, pageSize) {
       this.current = current;
       this.pagesize = pageSize;
+      this.showdata();     
     },
     itemRender(current, type, originalElement) {
       if (type === "prev") {
@@ -433,18 +437,26 @@ body {
     height: @navheight !important;
     // transform: scale(0.95);
     .prev {
-      color: #f6f5ec;
+      font-size: 1rem;
+      color: #fff;
+      font-weight: bold;
     }
     .next {
-      color: #f6f5ec;
+      font-size: 1rem;
+      color: #fff;
+      font-weight: bold;
     }
-    li {
-      color: #009ad6;
+    .ant-pagination-item-active{       
+          background: #fdb933;
+          border-color: #fdb933;
+    a{
+      color: #fff;
+    }
     }
   }
 }
 .liststyle{
-  // margin-top: 20px;
+  margin-bottom: 20px;
   overflow: auto;
   h3{
     color: #003366;
@@ -468,9 +480,10 @@ div{
      float: left;
 		margin-left: 10px;
 		padding: 10px;
-		background: #efc531;
+		background: #FF9900;
 		margin-bottom: 10px;
 		border-radius: 4px;
+    color: #f7f7f7;
 		font-size: 14px;
     }
   }
