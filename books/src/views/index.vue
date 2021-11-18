@@ -1,37 +1,33 @@
 <template>
   <div>
     <div class="head">
-      <div class="headcontent">
-        <el-row>
-          <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3">
-            <el-button class="menu" @click="Openmenu()"> </el-button>
-          </el-col>
-          <el-col :xs="21" :sm="21" :md="21" :lg="21" :xl="21">
-            <el-input placeholder="请输入内容" size="small "  v-model="searchtxt" clearable>
-              <el-select
-                v-model="searchselect"
-                slot="prepend"             
-                class="selectvalue"
-              >
-                <el-option label="全部" value="0"></el-option>
-                <el-option label="书名" value="1"></el-option>
-                <el-option label="作者" value="2"></el-option>
-              </el-select>
-              <el-button slot="append">
-                <img src="../assets/Image/搜索 (2).png" width="24" height="24">
-              </el-button>
-            </el-input>
-          </el-col>
-        </el-row>
-      </div>
+      <van-row :gutter="20">
+        <van-col :span="2">
+          <div class="menu"><van-button @click="Openmenu()"></van-button></div>
+        </van-col>
+        <van-col :span="22"
+          ><van-search
+            v-model="searchtxt"
+            show-action
+            label="书名/作者"
+            shape="round"
+            background="#555"
+            class="searchstyle"
+            placeholder="请输入搜索关键词"
+        >  <template #action>
+    <div @click="onSearch" style="color:#f7f7f7">搜索</div>
+  </template></van-search>
+      
+        </van-col>
+      </van-row>
     </div>
     <div class="content">
-      <el-row>
-        <el-col :xs="19" :sm="19" :md="19" :lg="19" :xl="19" :push="2">
-          <div style="overflow: auto">
-            <dl v-for="item in pagebooks" :key="item.id">
-              <dt>
-                <el-image :src="item.url" fit="fill"></el-image>
+      <van-row>
+        <van-col :span="22" :offset="1">
+          <div style="overflow: auto" v-for="item in pagebooks" :key="item.id">
+            <dl>
+              <dt @click="showstore(item.booksname)">
+                <van-image class="Image" fit="cover" :src="item.url" />
               </dt>
               <dd>
                 ISBN：<span>{{ item.ISBN }}</span>
@@ -45,7 +41,7 @@
               <dd>
                 索书号：<span>{{ item.ssh }}</span>
               </dd>
-              
+
               <dd>
                 作者：<span style="color: #009ad6">{{ item.writer }}</span>
               </dd>
@@ -54,50 +50,78 @@
               </dd>
               <dd>
                 出版日期：<span>{{ item.cbdate }}</span>
-              </dd>             
+              </dd>
               <dd>
                 定价：￥<span style="color: #6950a1">{{
                   item.price.toFixed(2)
                 }}</span>
               </dd>
-               <dd>
-                架位号：<span style="color:#99CC33">{{ item.numpage }}</span>
+              <dd>
+                架位号：<span style="color: #99cc33">{{ item.numpage }}</span>
               </dd>
             </dl>
+            <div style="clear: both"></div>
+            <van-divider />
           </div>
-        </el-col>
-      </el-row>
+        </van-col>
+      </van-row>
     </div>
     <div class="footer">
-      <a-pagination
-        :default-current="current"
-        show-size-changer
+      <van-pagination
         v-model="current"
-        :pageSize="pagesize"
-        :total="total"
-        :item-render="itemRender"
-        @change="page_click"
+        :total-items="total"
+        :items-per-page="pagesize"
+        mode="simple"
         class="divipage"
+        @change="page_click"
       />
     </div>
-    <el-drawer
-  :visible.sync="drawer"
-  direction="ltr"
-  wrapperClosable
-  size="75%"
-  class="menustyle"
-  :before-close="handleClose">
-  <span slot="title" style="color:#666666;font-weight:bold">分类查询</span>
-
- <div class="liststyle" v-for="(item,index) in querytype" :key="index"> 
-   <h3>{{item.type}}</h3>
-  <el-row>
-    <el-col>    
-   <div v-for="itemchild in item.name" :key="itemchild"><span :class="selectType==itemchild?'activetag':'tag'" @click="click_name(itemchild)" >{{itemchild}}</span></div>
-    </el-col>
-  </el-row>
-  </div>
-</el-drawer>
+    <van-popup
+      v-model="popupVisible"
+      closeable
+      close-icon="arrow"
+      position="left"
+      class="popupstyle"
+      :round="true"
+    >
+      <van-sticky>
+        <van-nav-bar title="选择类别" />
+      </van-sticky>
+      <div class="liststyle" v-for="(item, index) in querytype" :key="index">
+        <van-divider />
+        <h3>{{ item.type }}</h3>
+        <van-row>
+          <van-col>
+            <div v-for="itemchild in item.name" :key="itemchild">
+              <ul>
+                <li
+                  :class="selectType == itemchild ? 'activetag' : 'tag'"
+                  @click="click_name(itemchild)"
+                >
+                  {{ itemchild }}
+                </li>
+              </ul>
+            </div>
+          </van-col>
+        </van-row>
+      </div>
+    </van-popup>
+    <van-popup
+      v-model="tro_visible"
+      :round="true"
+      closeable
+      close-icon="close"
+      class="txtstyle"
+    >
+      <div>
+        <p>{{ selectname }}的内容简介</p>
+        <p>
+          哥白尼提出了“日心说”，我们才知道这个世界并不是宇宙的中心。
+          哈勃用望远镜揭开了河外星系的神秘面纱，我们才知道宇宙中还有千亿个银河系。
+          “自由号”发现了黑洞的存在，我们才知道也许宇宙之外还有宇宙，我们只是永恒中一颗微小的沙粒。
+        </p>
+      </div>
+    </van-popup>
   </div>
 </template>
 
@@ -106,108 +130,114 @@ export default {
   data() {
     return {
       searchtxt: "",
-      searchselect: "全部",
       layoutwidth: 0,
       total: 0,
-      pagesize: 3,
+      pagesize: 5,
       current: 1,
-      loading: false,
       books: [],
-      pagebooks:[],
-      drawer:false,
-     
-      querytype:[
+      pagebooks: [],
+      querytype: [
         {
-       type:"A类",
-       name:["马克思主义","列宁主义","毛泽东思想","邓小平理论"]
-      },
-      {
-       type:"B类",
-       name:["哲学","宗教"]
-      },
-      {
-       type:"C类",
-       name:["社会科学总论"]
-      },
-       {
-       type:"D类",
-       name:["政治","法律"]
-      },
-      {
-       type:"E类",
-       name:["军事"]
-      },
-      {
-       type:"F类",
-       name:["经济"]
-      },
-      {
-       type:"G类",
-       name:["文化","科学","教育","体育"]
-      },
-       {
-       type:"H类",
-       name:["语言","文字"]
-      },
-      {
-       type:"I类",
-       name:["文学"]
-      },
-      {
-       type:"J类",
-       name:["艺术"]
-      },
-      {
-       type:"K类",
-       name:["历史","地理"]
-      },
-       {
-       type:"N类",
-       name:["自然科学总论"]
-      },
-      {
-       type:"O类",
-       name:["数理科学和化学"]
-      },
-      {
-       type:"P类",
-       name:["天文学","地球科学"]
-      },
-      {
-       type:"Q类",
-       name:["生物科学"]
-      },
-       {
-       type:"R类",
-       name:["医药","医药卫生"]
-      },
-       {
-       type:"S类",
-       name:["农业科学"]
-      },
-       {
-       type:"T类",
-       name:["工业技术"]
-      },
-       {
-       type:"U类",
-       name:["交通运输"]
-      },
-       {
-       type:"V类",
-       name:["航空航天"]
-      },
+          type: "A类",
+          name: [
+            "马克思主义",
+            "列宁主义",
+            "毛泽东思想",
+            "邓小平理论",
+            "恩格斯著作",
+            "列宁著作",
+            "斯大林著作",
+          ],
+        },
         {
-       type:"X类",
-       name:["环境科学","安全科学"]
-      },
+          type: "B类",
+          name: ["哲学", "世界哲学", "中国哲学", "亚洲哲学", "宗教"],
+        },
         {
-       type:"Z类",
-       name:["综合性图书"]
-      },
+          type: "C类",
+          name: ["社会科学总论"],
+        },
+        {
+          type: "D类",
+          name: ["政治", "法律"],
+        },
+        {
+          type: "E类",
+          name: ["军事"],
+        },
+        {
+          type: "F类",
+          name: ["经济"],
+        },
+        {
+          type: "G类",
+          name: ["文化", "科学", "教育", "体育"],
+        },
+        {
+          type: "H类",
+          name: ["语言", "文字"],
+        },
+        {
+          type: "I类",
+          name: ["文学"],
+        },
+        {
+          type: "J类",
+          name: ["艺术"],
+        },
+        {
+          type: "K类",
+          name: ["历史", "地理"],
+        },
+        {
+          type: "N类",
+          name: ["自然科学总论"],
+        },
+        {
+          type: "O类",
+          name: ["数理科学和化学"],
+        },
+        {
+          type: "P类",
+          name: ["天文学", "地球科学"],
+        },
+        {
+          type: "Q类",
+          name: ["生物科学"],
+        },
+        {
+          type: "R类",
+          name: ["医药", "医药卫生"],
+        },
+        {
+          type: "S类",
+          name: ["农业科学"],
+        },
+        {
+          type: "T类",
+          name: ["工业技术"],
+        },
+        {
+          type: "U类",
+          name: ["交通运输"],
+        },
+        {
+          type: "V类",
+          name: ["航空航天"],
+        },
+        {
+          type: "X类",
+          name: ["环境科学", "安全科学"],
+        },
+        {
+          type: "Z类",
+          name: ["综合性图书"],
+        },
       ],
-      selectType:"",
-        
+      selectType: "",
+      popupVisible: false,
+      selectname: "",
+      tro_visible: false,
     };
   },
   mounted() {
@@ -217,19 +247,31 @@ export default {
   },
 
   methods: {
-  click_name(name){
- this.selectType=name;
-  },
-    handleClose(done){     
-      // console.log(this.selectType);  
+    onSearch(){
+    console.log(this.searchtxt);
+    
+    },
+    showstore(name) {
+      this.selectname = name;
+      this.tro_visible = true;
+    },
+    click_name(name) {
+      if (this.selectType == "") {
+        this.selectType = name;
+      } else {
+        this.selectType = "";
+      }
+      console.log(this.selectType);
+    },
+    handleClose(done) {
       done();
     },
-    Openmenu(){
-     this.drawer=true;
+    Openmenu() {
+      this.popupVisible = true;
     },
     showdata() {
       this.books = [
-        {        
+        {
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
           booksname: "沙丘",
@@ -240,10 +282,10 @@ export default {
           numpage: "A123",
           price: 68.0,
         },
-        {        
-          url: require("../assets/Image/books1.jpg"),
+        {
+          url: require("../assets/Image/books2.jpg"),
           ISBN: "9787539967363",
-          booksname: "沙丘",
+          booksname: "沙丘1",
           ssh: "A11/1",
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
@@ -251,10 +293,10 @@ export default {
           numpage: "A123",
           price: 68.0,
         },
-        {    
+        {
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
-          booksname: "沙丘",
+          booksname: "沙丘2",
           ssh: "A11/1",
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
@@ -262,10 +304,10 @@ export default {
           numpage: "A123",
           price: 68.0,
         },
-        {        
+        {
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
-          booksname: "沙丘",
+          booksname: "沙丘3",
           ssh: "A11/1",
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
@@ -273,10 +315,10 @@ export default {
           numpage: "A123",
           price: 68.0,
         },
-        {        
+        {
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
-          booksname: "沙丘",
+          booksname: "沙丘4",
           ssh: "A11/1",
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
@@ -284,43 +326,37 @@ export default {
           numpage: "A123",
           price: 68.0,
         },
-        {     
+        {
           url: require("../assets/Image/books1.jpg"),
           ISBN: "9787539967363",
-          booksname: "沙丘",
+          booksname: "沙丘5",
           ssh: "A11/1",
           writer: "[美] 弗兰克·赫伯特",
           cbs: "江苏凤凰文艺出版社",
           cbdate: "2017",
-           numpage: "A123",
+          numpage: "A123",
           price: 68.0,
         },
       ];
-      this.total = this.books.length;    
-      this.pagebooks=this.books;   
-     for (var i = 0; i < this.books.length; i++) {               
-      this.pagebooks[i]["key"] =i+1; 
-     }
-      this.pagebooks=this.books.slice((this.current-1)*this.pagesize,this.pagesize*this.current);
-      
-      
-      
-    },
-  
-    //点击页数
-    page_click(current, pageSize) {
-      this.current = current;
-      this.pagesize = pageSize;
-      this.showdata();     
-    },
-    itemRender(current, type, originalElement) {
-      if (type === "prev") {
-        return <a class="prev">上一页</a>;
-      } else if (type === "next") {
-        return <a class="next">下一页</a>;
+      this.total = this.books.length;
+      this.pagebooks = this.books;
+      for (var i = 0; i < this.books.length; i++) {
+        this.pagebooks[i]["key"] = i + 1;
       }
-      return originalElement;
+      this.pagebooks = this.books.slice(
+        (this.current - 1) * this.pagesize,
+        this.pagesize * this.current
+      );
     },
+    index(index) {
+      console.log(index);
+    },
+    //点击页数
+    page_click(current) {
+      this.current = current;
+      this.showdata();
+    },
+
     //屏幕大小调整
     screenwidth() {
       this.layoutwidth = document.body.clientWidth * 0.9;
@@ -334,7 +370,7 @@ export default {
 };
 </script>
 <style  lang="less">
-@fontsize: 1rem;
+@fontsize: 16px;
 @center: center;
 @imgwidth: 8rem;
 @navheight: 3.5rem;
@@ -345,14 +381,14 @@ export default {
 body {
   font-size: @fontsize;
   font-family: "正黑";
+  background: #fdffff;
 }
 .head {
   height: @navheight;
   width: 100%;
-  background: #99CCCC;
- border-radius:0px 0px 10px 10px;
- box-shadow:0 0  15px #78cdd1;
- 
+  background: #555;
+  border-radius: 0px 0px 10px 10px;
+  box-shadow: 0 0 15px #a1a3a6;
   z-index: 1;
   position: fixed;
   left: 0;
@@ -360,50 +396,37 @@ body {
   bottom: 0;
   right: 0;
   margin: 0 auto;
+  display: table;
   .menu {
-    width: 32px;
-    margin: 0 auto;
-    height: 32px;
-    background-image: url("../assets/Image/菜单 (1).png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    outline: none !important;
-  }
-  .headcontent {
-    text-align: @center;
-    line-height: @navheight;
-    .el-input {
-      width: 95%;
-      height: 32px;
-      margin-right: 10px;   
-      .selectvalue {
-        width: 5rem;           
-      }
-      .el-button {
-        width: @navheight;
-      }
-      .el-input__inner {
-        padding: 0px 15px;     
-      }         
+    padding: 10px 0px 0px 10px;
+    .van-button {
+      width: 32px;
+      height: 32px;    
+      background-image: url("../assets/Image/菜单 (1).png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      outline: none !important;
     }
+  }
+  .searchstyle {
+    height: @navheight;
   }
 }
 .content {
   width: 100%;
   z-index: -1;
   margin-top: 4.5rem;
-  padding-bottom: 4rem;
-  dl:not(:nth-child(1)) {
-    margin-top: 1rem;
-  }
-  dl {
+  padding-bottom: 3rem;
+  div dl {
+    clear: both;
     dt {
       float: left;
       clear: both;
-
-      .el-image {
-        cursor: pointer;
+      .Image {
         width: @imgwidth;
+        height: @imgwidth*1.44;
+        cursor: pointer;
+        pointer-events: none;
       }
     }
     dd {
@@ -411,8 +434,9 @@ body {
       text-overflow: ellipsis;
       overflow: hidden;
       word-break: break-all;
-      font-size: 12px;
-      margin-left: 9rem;
+      font-size: 0.6rem;
+      padding-left: 1rem;
+      margin-bottom: 0.5rem;
     }
     span {
       color: #181d4b;
@@ -422,71 +446,92 @@ body {
 .footer {
   width: 100%;
   height: @navheight;
- background: #99CCCC;
- border-radius:10px 10px 0px 0px;
- box-shadow:0 0  15px #78cdd1;
+  background: #555;
+  border-radius: 10px 10px 0px 0px;
+  box-shadow: 0 0 15px #a1a3a6;
   z-index: 1;
   position: fixed;
   bottom: 0;
   left: 0;
   margin: 0 auto;
   .divipage {
-    text-align: center;
-    line-height: @navheight;
+    padding-top: 0.5rem;
     width: 100%;
-    height: @navheight !important;
-    // transform: scale(0.95);
-    .prev {
-      font-size: 1rem;
-      color: #fff;
-      font-weight: bold;
+    transform: scale(0.9);
+    margin: 0 auto;
+    //上一页，下一页样式
+    .van-pagination__prev,
+    .van-pagination__next {
+      background: #fcfcfc;
+      color: #6c6c6c;
     }
-    .next {
-      font-size: 1rem;
-      color: #fff;
-      font-weight: bold;
-    }
-    .ant-pagination-item-active{       
-          background: #fdb933;
-          border-color: #fdb933;
-    a{
-      color: #fff;
-    }
+    .van-pagination__page-desc {
+      color: aliceblue;
     }
   }
 }
-.liststyle{
-  margin-bottom: 20px;
-  overflow: auto;
-  h3{
+.popupstyle {
+  width: 75%;
+  // height: 100vh;
+}
+.liststyle {
+  width: 100%;
+  h3 {
     color: #003366;
     margin-left: 10px;
   }
- .el-col{
-div{
-    margin-left: 5px;
-    margin-top: 10px;
-    .tag{
-   
+  .van-col {
+    div {
+      margin-left: 5px;
+      margin-top: 10px;
       float: left;
-		margin-left: 10px;
-		padding: 10px;
-		background: #f7f7f7;
-		margin-bottom: 10px;
-		border-radius: 4px;
-		font-size: 14px;
-    }
-    .activetag{
-     float: left;
-		margin-left: 10px;
-		padding: 10px;
-		background: #FF9900;
-		margin-bottom: 10px;
-		border-radius: 4px;
-    color: #f7f7f7;
-		font-size: 14px;
+      ul li {
+        list-style: none;
+      }
+      .tag {
+        margin-left: 5px;
+        padding: 10px;
+        background: #f7f7f7;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .activetag {
+        margin-left: 5px;
+        padding: 10px;
+        background: #ff9900;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        color: #f7f7f7;
+        font-size: 14px;
+      }
     }
   }
- } 
+}
+.txtstyle {
+  border-radius: 15%;
+  width: 300px;
+  height: 300px;
+  overflow: auto;
+  background: #fdffff;
+  display: table;
+  div {
+    display: table-cell;
+    vertical-align: middle;
+  }
+  :nth-child(1) {
+    text-align: center;
+    color: #007722;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  :nth-of-type(2) {
+    width: 90%;
+    margin:0 auto;
+    text-indent: 1.6rem;
+    font-size: 0.8rem;
+    color: #181d4b;
+    line-height: 1.8rem;
+  }
 }
 </style>
