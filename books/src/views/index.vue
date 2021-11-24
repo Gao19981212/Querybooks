@@ -23,40 +23,40 @@
     </div>
     <div class="content">
       <van-row>
-        <van-col :span="22" :offset="1">
+        <van-col :span="20" :offset="2">
           <div style="overflow: auto" v-for="item in pagebooks" :key="item.id">
             <dl>
               <dt @click="showstore(item.booksname)">
-                <van-image class="Image" fit="cover" :src="item.url" />
+                <van-image class="Image" fit="cover" :src="item.url" :style="{width:layoutwidth*0.35+'px',height:layoutwidth*0.35*1.44+'px'}" />
               </dt>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 ISBN：<span>{{ item.ISBN }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 书名：
                 <span style="color: #494949; font-weight: bold">{{
                   item.booksname
                 }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 索书号：<span>{{ item.ssh }}</span>
               </dd>
 
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 作者：<span style="color: #009ad6">{{ item.writer }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 出版社：<span>{{ item.cbs }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 出版日期：<span>{{ item.cbdate }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 定价：￥<span style="color: #6950a1">{{
                   item.price.toFixed(2)
                 }}</span>
               </dd>
-              <dd>
+              <dd :style="{fontSize:layoutwidth*0.032+'px',height:layoutwidth*0.066+'px'}">
                 架位号：<span style="color: #99cc33">{{ item.numpage }}</span>
               </dd>
             </dl>
@@ -237,13 +237,13 @@ export default {
       selectType: "",
       popupVisible: false,
       selectname: "",
-      tro_visible: false,
+      tro_visible: false,    
     };
   },
   mounted() {
     Window.title = "图书查询";
     this.screenwidth();
-    this.showdata();
+    this.showdata();       
   },
 
   methods: {
@@ -359,10 +359,10 @@ export default {
 
     //屏幕大小调整
     screenwidth() {
-      this.layoutwidth = document.body.clientWidth * 0.9;
+      this.layoutwidth = document.body.clientWidth;
       window.onresize = () => {
         return (() => {
-          this.layoutwidth = document.body.clientWidth * 0.9;
+          this.layoutwidth = document.body.clientWidth;
         })();
       };
     },
@@ -423,8 +423,8 @@ body {
       float: left;
       clear: both;
       .Image {
-        width: @imgwidth;
-        height: @imgwidth*1.44;
+        // width: @imgwidth;
+        // height: @imgwidth*1.44;
         cursor: pointer;
         pointer-events: none;
       }
@@ -436,7 +436,8 @@ body {
       word-break: break-all;
       font-size: 0.6rem;
       padding-left: 1rem;
-      margin-bottom: 0.5rem;
+    //  height: 25px;
+      // margin-bottom: 8.5px;
     }
     span {
       color: #181d4b;
